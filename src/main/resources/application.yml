@@ -1,0 +1,14 @@
+spring:
+  profiles:
+    active: dev
+
+logging:
+  level:
+    org.springframework.security:
+      - debug
+      - info
+    org.springframework.web: error
+    org.hibernate.SQL: debug
+    org.hibernate.engine.QueryParameters: debug
+    org.hibernate.engine.query.HQLQueryPlan: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace

@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://gz-cynosdbmysql-grp-jg1xfvw1.sql.tencentcdb.com:26760/mis?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+#    username: root
+#    password: 'ptx1993@'
+
+
+#   mis_lcsd
+    #url: jdbc:mysql://misdb.mysql.database.azure.com:3306/mis_had?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    #username: psdTest
+    #password: '@asL2023'
+
+    url: jdbc:mysql://cms-server.com:3306/mis_cmab?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: psdTest
+    password: '@asL2023'
+  jpa:
+    database: MySQL
+    database-platform: com.asl.prd004.config.MySQL8WithoutFKDialect
+    show-sql: true
+    hibernate:
+        ddl-auto: update
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 1000MB
+  mvc:
+    dispatch-options-request: true

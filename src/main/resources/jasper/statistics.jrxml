@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.9.0.final using JasperReports Library version 6.9.0-cb8f9004be492ccc537180b49c026951f4220bf3  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="statistics" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="9ab2b4f7-7149-4e3c-aa41-bd2fd6dce59a">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="MIS"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="tableName" class="java.lang.String"/>
+	<field name="counts" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="40" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement x="180" y="2" width="200" height="38" uuid="ce49e6ed-3845-448b-8294-adfba0b922be"/>
+				<textElement>
+					<font fontName="SansSerif" size="18"/>
+				</textElement>
+				<text><![CDATA[Record Statistics Report]]></text>
+			</staticText>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="41" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement x="80" y="1" width="100" height="39" uuid="9c514705-cf69-4bac-b792-9738366f6249">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[table name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="180" y="1" width="200" height="40" uuid="fb7d7118-2088-41a9-be54-a3cb4d3a383b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[counts]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="34" splitType="Stretch">
+			<textField>
+				<reportElement x="80" y="1" width="100" height="32" uuid="15295b49-c56d-4763-abdc-27385168ba63">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="00d45827-83ee-4f3d-aaac-e04527b604bd"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{tableName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="180" y="1" width="200" height="33" uuid="d664861e-d172-4df6-8448-3a9a1fd12198">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="4d5214ea-6e19-4276-b0b5-ef547c509c7b"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{counts}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

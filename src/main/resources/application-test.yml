@@ -1,0 +1,17 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://47.242.251.57:3306/mis?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: psdTest
+    password: '@asL2023'
+  jpa:
+    database: MySQL
+    database-platform: com.asl.prd004.config.MySQL8WithoutFKDialect
+    show-sql: true
+    hibernate:
+        ddl-auto: update
+  mvc:
+    dispatch-options-request: true
