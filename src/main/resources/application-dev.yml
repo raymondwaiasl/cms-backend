@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: org.mariadb.jdbc.Driver
 #    url: jdbc:mysql://gz-cynosdbmysql-grp-jg1xfvw1.sql.tencentcdb.com:26760/mis?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
 #    username: root
 #    password: 'ptx1993@'
@@ -14,12 +14,12 @@ spring:
     #username: psdTest
     #password: '@asL2023'
 
-    url: jdbc:mysql://cms-server.com:3306/mis_cmab?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
-    username: psdTest
-    password: '@asL2023'
+    url: jdbc:mariadb://t2vdbs-cmadashb-dsefdbu-ha1.dbaas.gcisdctr.hksarg:19307/eformdata?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: eFormOwner
+    password: 'C@6F+ux2'
   jpa:
-    database: MySQL
-    database-platform: com.asl.prd004.config.MySQL8WithoutFKDialect
+    # database: MySQL
+    # database-platform: com.asl.prd004.config.MySQL8WithoutFKDialect
     show-sql: true
     hibernate:
         ddl-auto: update

@@ -1,11 +1,11 @@
-FROM openjdk:17-alpine as build
+FROM --platform=linux/amd64 openjdk:17-alpine as build
 COPY . /usr/app
 WORKDIR /usr/app
 RUN chmod +x mvnw \
     && ./mvnw --version \
     && ./mvnw clean package
 
-FROM openjdk:17-alpine
+FROM --platform=linux/amd64 openjdk:17-alpine
 COPY --from=build /usr/app/target/*.jar app.jar
 
 VOLUME /resource
