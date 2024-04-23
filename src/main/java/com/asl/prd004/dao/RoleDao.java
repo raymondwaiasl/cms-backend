@@ -20,4 +20,7 @@ public interface RoleDao extends JpaRepository<MisRole, Long> {
 
     @Query(nativeQuery = true,value="select mt.mis_role_id from mis_role mt ")
     List<String> getAllRoleId();
+
+    @Query(value="select mt.misRoleName from MisRole mt where mt.misRoleId in (:roleIds)")
+    List<String> getRoleNameByRoleIds(List<String> roleIds);
 }

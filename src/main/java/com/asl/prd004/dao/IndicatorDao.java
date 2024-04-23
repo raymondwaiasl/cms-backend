@@ -1,27 +1,60 @@
 package com.asl.prd004.dao;
 
-import com.asl.prd004.dto.CategoryDto;
+import com.asl.prd004.dto.IndicatorDetailDto;
 import com.asl.prd004.dto.IndicatorDto;
-import com.asl.prd004.dto.TypeRefPropertyDto;
 import com.asl.prd004.entity.IndicatorsS;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IndicatorDao extends JpaRepository<IndicatorsS, String> {
 
-//    @Query(value = "select new com.asl.prd004.dto.IndicatorDto(m.id, m.indCode, m.subcategoryCode, m.indNameEn, m.indNameTc, m.dataType, m.currency, m.active) " +
-//            "from IndicatorsS m ")
-    Page<IndicatorsS> findAll(Specification specification, Pageable pageable);
+    @Query(nativeQuery = true, value = "SELECT\n" +
+            " is2.id as indicatorId,\n" +
+            " is2.ind_code as indicatorCode,\n" +
+            " if(?6 = 'EN', ss.subcategory_name_en, ss.subcategory_name_tc) as subcategoryName,\n"+
+            " if(?6 = 'EN', c.category_name_en, c.category_name_tc) as categoryName,\n"+
+            " is2.ind_name_en as indicatorNameEn,\n"+
+            " is2.ind_name_tc as indicatorNameTc,\n"+
+            " is2.active,\n" +
+            " ss.category_code\n" +
+            " from\n" +
+            " indicators_s is2\n" +
+            " left join subcategory_s ss on\n" +
+            " is2.subcategory_code = ss.subcategory_code\n" +
+            " left join category_s c on\n" +
+            " ss.category_code = c.category_code\n" +
+            " WHERE if(?1 != '', ss.category_code = ?1, 1=1) \n" +
+            " and if(?2 != '', is2.subcategory_code = ?2, 1=1) \n" +
+            " and if(?3 != '', is2.ind_code = ?3, 1=1) \n" +
+            " and if(?4 != '', if(?6 = 'EN', is2.ind_name_en like concat('%', ?4, '%'), is2.ind_name_tc like concat('%', ?4, '%')), 1=1) \n" +
+            " and if(?5 >= 0, is2.active = ?5, 1=1)",
+            countQuery = "select count(1) from " +
+                    "( " +
+                    " SELECT is2.id as indicatorId \n" +
+                    " from\n" +
+                    " indicators_s is2\n" +
+                    " left join subcategory_s ss on\n" +
+                    " is2.subcategory_code = ss.subcategory_code\n" +
+                    " WHERE if(?1 != '', ss.category_code = ?1, 1=1) \n" +
+                    " and if(?2 != '', is2.subcategory_code = ?2, 1=1) \n" +
+                    " and if(?3 != '', is2.ind_code = ?3, 1=1) \n" +
+                    " and if(?4 != '', if(?6 = 'EN', is2.ind_name_en like concat('%', ?4, '%'), is2.ind_name_tc like concat('%', ?4, '%')), 1=1) \n" +
+                    " and if(?5 >= 0, is2.active = ?5, 1=1)" +
+                    ") t")
+    Page<Map<String, Object>> findAll(String categoryCode, String subCategoryCode, String indicatorCode,
+                                       String indicatorName, Integer active, String lang, Pageable pageable);
 
-    @Query(value = "select new com.asl.prd004.dto.IndicatorDto(m.id, m.indCode, m.subcategoryCode, m.indNameEn, m.indNameTc, m.dataType, m.currency, m.active) " +
-            "from IndicatorsS m  where m.id = ?1 ")
-    IndicatorDto findIndicatorsById(String id);
+
+    @Query(value = "select new com.asl.prd004.dto.IndicatorDetailDto(m.id, m.indCode, m.subcategoryCode, m.indNameEn," +
+            " m.indNameTc, m.dataType, m.currency, m.active, m.subIndicatorNameEn, m.subIndicatorNameTc, s.categoryCode) " +
+            " from IndicatorsS m" +
+            " left join SubcategoryS s on s.subcategoryCode = m.subcategoryCode where m.id = ?1 ")
+    IndicatorDetailDto findIndicatorsById(String id);
 
     List<IndicatorsS> findIndicatorsByIndCode(String indCode);
 
@@ -30,26 +63,15 @@ public interface IndicatorDao extends JpaRepository<IndicatorsS, String> {
             "WHERE Ins.subcategoryCode IN(?1) ", nativeQuery = false)
     List<IndicatorDto> findIndicatorsSubCategoryCode(List<String> subcategoryCodes);
 
+    @Query(value = "select Ins.ind_code as indicatorCode, Ins.subcategory_code as subcategoryCode, if(?2 = 'EN', Ins.ind_name_en, Ins.ind_name_tc) as indicatorName" +
+            " from indicators_s Ins\n" +
+            " WHERE Ins.subcategory_code IN(?1) ", nativeQuery = true)
+    List<Map<String, Object>> findBySubCategoryCodes(List<String> subcategoryCodes, String lang);
+
     @Query(value = "select new com.asl.prd004.dto.IndicatorDto(m.id, m.indCode, m.subcategoryCode, m.indNameEn, m.indNameTc, m.dataType, m.currency, m.active) " +
             "from IndicatorsS m  where m.subcategoryCode = ?1 ")
     List<IndicatorDto> findIndicatorsBySubcategoryCode(String subcategoryCode);
 
-    /*@Query(value = "select new com.asl.prd004.dto.CategoryDto(ss.categoryCode) " +
-            "from IndicatorsS is2\n" +
-            "LEFT JOIN SubcategoryS ss on is2.subcategoryCode = ss.subcategoryCode \n" +
-            "WHERE is2.indCode = ?1 ")
-    CategoryDto findCategoryByIndCode(String indCode);
-
-    @Query(value = "select new com.asl.prd004.dto.TypeRefPropertyDto( mcr.misCrossRefId, " +
-            " pt.misTypeId, pt.misTypeLabel," +
-            " ct.misTypeId, ct.misTypeLabel )" +
-            " from MisCrossRef mcr " +
-            " left join MisType pt on pt.misTypeId = mcr.misCrossRefParentTable\n" +
-            " left join MisColumn pc on pc.misColumnId = mcr.misCrossRefParentKey\n" +
-            " left join MisType ct on ct.misTypeId = mcr.misCrossRefChildTable\n" +
-            " left join MisColumn cc on cc.misColumnId = mcr.misCrossRefChildKey " +
-            " where pt.misTypeId in (:typeIds) or ct.misTypeId in (:typeIds) "
-    )
-    List<TypeRefPropertyDto> findAllTypeRef(@Param("typeIds") List<String> typeIds);*/
+    List<IndicatorsS> findByIndCode(String indCode);
 
 }

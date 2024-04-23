@@ -9,10 +9,8 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "form_input_request_indicator_s")
-public class FormInputRequestindicatorS extends BaseModel  implements Serializable  {
+public class FormInputRequestindicatorS extends BaseModel implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "seqGenerator")
-    @GenericGenerator(name = "seqGenerator", strategy = "com.asl.prd004.utils.SeqGenerator")
     @Column(name = "id", nullable = false, length = 16)
     private String id;
 

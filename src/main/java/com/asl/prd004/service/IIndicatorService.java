@@ -1,23 +1,23 @@
 package com.asl.prd004.service;
 
-import com.asl.prd004.dto.IndicatorDto;
-import com.asl.prd004.dto.PageDataDto;
-import com.asl.prd004.dto.SearchIndicatorDto;
-import com.asl.prd004.dto.SearchMoluOfficeDto;
-import com.asl.prd004.entity.IndicatorsS;
-import com.asl.prd004.entity.MoluOfficeS;
+import com.asl.prd004.dto.*;
+import org.json.JSONObject;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IIndicatorService {
 
-    PageDataDto getIndicatorList(SearchIndicatorDto dto);
+    PageDataDto<Map<String, Object>> getIndicatorList(String categoryCode, String subCategoryCode, String indicatorCode,
+                                                      String indicatorName, Integer active, String lang, JSONObject pageState, JSONObject sort);
 
-    IndicatorDto getIndicatorDetail(String id);
+    IndicatorDetailDto getIndicatorDetail(String id);
 
-    boolean addIndicator(String categoryCode, String subCategoryCode, String indicatorCode, String indicatorNameEn, String indicatorNameTc, String dataType, String currency, Integer active);
+    boolean addIndicator(String categoryCode, String subCategoryCode, String indicatorCode, String indicatorNameEn,
+                         String indicatorNameTc, String dataType, String currency, Integer active, String subIndicatorNameEn, String subIndicatorNameTc);
 
-    boolean editIndicator(String id, String categoryCode, String subCategoryCode, String indicatorCode, String indicatorNameEn, String indicatorNameTc, String dataType, String currency, Integer active);
+    boolean editIndicator(String id, String categoryCode, String subCategoryCode, String indicatorCode, String indicatorNameEn,
+                          String indicatorNameTc, String dataType, String currency, Integer active, String subIndicatorNameEn, String subIndicatorNameTc);
 
     boolean deleteIndicator(String id);
 

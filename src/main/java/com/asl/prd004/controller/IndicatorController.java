@@ -1,18 +1,11 @@
 package com.asl.prd004.controller;
 
 import com.asl.prd004.config.ResultGenerator;
-import com.asl.prd004.dto.PageableDto;
-import com.asl.prd004.dto.SearchIndicatorDto;
-import com.asl.prd004.entity.CategoryS;
-import com.asl.prd004.service.ICategoryService;
 import com.asl.prd004.service.IIndicatorService;
 import com.asl.prd004.utils.Log;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/indicator")
@@ -22,13 +15,33 @@ public class IndicatorController {
     IIndicatorService indicatorService;
 
     @Log("Get all Indicator list.")
-    @GetMapping(value = "/getIndicatorList")
-    public ResultGenerator getIndicatorList(@RequestBody SearchIndicatorDto data) {
-        return ResultGenerator.getSuccessResult(indicatorService.getIndicatorList(data));
+    @PostMapping(value = "/getIndicatorList")
+    public ResultGenerator getIndicatorList(@RequestBody String data) throws Exception {
+
+        if (data == null || "".equals(data)) {
+            return ResultGenerator.getFailResult("参数为空!");
+        }
+
+        JSONObject json = new JSONObject(data);
+
+        String categoryCode = json.getString("categoryCode");
+        String subCategoryCode = json.getString("subCategoryCode");
+        String indicatorCode = json.getString("indicatorCode");
+        String indicatorName = json.getString("indicatorName");
+        String lang = json.getString("lang");
+        String active = json.getString("active").isEmpty() ? "" : json.getString("active").trim();
+        Integer activeInt = active.isEmpty() ? -1 : (active.equalsIgnoreCase("true") ? 1 : 0);
+
+        JSONObject pageState = json.getJSONObject("pageState");
+
+        JSONObject sort = json.getJSONObject("sortModel");
+
+        return ResultGenerator.getSuccessResult(indicatorService.getIndicatorList(categoryCode, subCategoryCode, indicatorCode,
+                indicatorName, activeInt, lang, pageState, sort));
     }
 
     @Log("Get Indicator details.")
-    @GetMapping(value = "/getIndicatorDetail")
+    @PostMapping(value = "/getIndicatorDetail")
     public ResultGenerator getIndicatorDetail(@RequestBody String data) throws Exception {
         if (data == null || "".equals(data)) {
             return ResultGenerator.getFailResult("Parameter is empty\n!");
@@ -55,8 +68,10 @@ public class IndicatorController {
         String indicatorNameTc = json.getString("indicatorNameTc").isEmpty() ? "" : json.getString("indicatorNameTc").trim();
         String dataType = json.getString("dataType").isEmpty() ? "" : json.getString("dataType").trim();
         String currency = json.getString("currency").isEmpty() ? "" : json.getString("currency").trim();
+        String subIndicatorNameEn = json.getString("subIndicatorNameEn").isEmpty() ? "" : json.getString("subIndicatorNameEn").trim();
+        String subIndicatorNameTc = json.getString("subIndicatorNameTc").isEmpty() ? "" : json.getString("subIndicatorNameTc").trim();
 
-        Boolean active = !json.getBoolean("active") ? false : json.getBoolean("active");
+        boolean active =  json.getBoolean("active");
         int activeIntValue = active ? 1 : 0;
 
         if (indicatorCode.length() > 10) {
@@ -70,7 +85,7 @@ public class IndicatorController {
         }
 
         if (indicatorService.addIndicator(categoryCode, subCategoryCode, indicatorCode,
-                indicatorNameEn, indicatorNameTc, dataType, currency, activeIntValue)) {
+                indicatorNameEn, indicatorNameTc, dataType, currency, activeIntValue, subIndicatorNameEn, subIndicatorNameTc)) {
             return ResultGenerator.getSuccessResult("success");
         } else {
             return ResultGenerator.getFailResult("failed");
@@ -92,8 +107,10 @@ public class IndicatorController {
         String indicatorNameTc = json.getString("indicatorNameTc").isEmpty() ? "" : json.getString("indicatorNameTc").trim();
         String dataType = json.getString("dataType").isEmpty() ? "" : json.getString("dataType").trim();
         String currency = json.getString("currency").isEmpty() ? "" : json.getString("currency").trim();
+        String subIndicatorNameEn = json.getString("subIndicatorNameEn").isEmpty() ? "" : json.getString("subIndicatorNameEn").trim();
+        String subIndicatorNameTc = json.getString("subIndicatorNameTc").isEmpty() ? "" : json.getString("subIndicatorNameTc").trim();
 
-        Boolean active = !json.getBoolean("active") ? false : json.getBoolean("active");
+        boolean active = json.getBoolean("active");
         int activeIntValue = active ? 1 : 0;
 
         if (indicatorCode.length() > 10) {
@@ -107,7 +124,7 @@ public class IndicatorController {
         }
 
         if (indicatorService.editIndicator(id, categoryCode, subCategoryCode, indicatorCode,
-                indicatorNameEn, indicatorNameTc, dataType, currency, activeIntValue)) {
+                indicatorNameEn, indicatorNameTc, dataType, currency, activeIntValue, subIndicatorNameEn, subIndicatorNameTc)) {
             return ResultGenerator.getSuccessResult("success");
         } else {
             return ResultGenerator.getFailResult("failed");
@@ -130,7 +147,7 @@ public class IndicatorController {
     }
 
     @Log("Get all Indicator list by category code.")
-    @GetMapping(value = "/getIndicatorByCategoryCode")
+    @PostMapping(value = "/getIndicatorByCategoryCode")
     public ResultGenerator getIndicatorByCategoryCode(@RequestBody String data) throws Exception {
 
         if (data == null || "".equals(data)) {
@@ -146,7 +163,7 @@ public class IndicatorController {
     }
 
     @Log("Get all Indicator list by sub category code.")
-    @GetMapping(value = "/getIndicatorBySubcategoryCode")
+    @PostMapping(value = "/getIndicatorBySubcategoryCode")
     public ResultGenerator getIndicatorBySubcategoryCode(@RequestBody String data) throws Exception {
 
         if (data == null || "".equals(data)) {

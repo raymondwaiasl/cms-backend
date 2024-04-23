@@ -108,7 +108,11 @@ public class OrgChartMemberController {
         JSONObject json =new JSONObject(data);
         String roleId = json.getString("roleId");
         String roleName = json.getString("roleName");
-        String[] memberChildIds=new String[]{};
+        String memberIds = json.getString("memberIds");
+        orgChartService.insertUserRole(roleId, memberIds);
+
+
+        /*String[] memberChildIds=new String[]{};
         if("".equals(json.getString("memberIds"))||json.getString("memberIds")==null){
 
         }else {
@@ -150,7 +154,7 @@ public class OrgChartMemberController {
                     int insertFlag = orgChartService.insertMember(misMemberId, roleId, memberChildIds[i], childType);
                 }
             }
-        }
+        }*/
         return ResultGenerator.getSuccessResult("编辑成功!");
     }
 

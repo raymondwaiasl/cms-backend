@@ -18,6 +18,8 @@ spring:
     username: eFormOwner
     password: 'C@6F+ux2'
   jpa:
+    # database: MySQL
+    # database-platform: com.asl.prd004.config.MySQL8WithoutFKDialect
     # database: MariaDB
     database-platform: org.hibernate.dialect.MariaDBDialect
     show-sql: true

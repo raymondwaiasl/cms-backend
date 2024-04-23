@@ -2,6 +2,7 @@ package com.asl.prd004.controller;
 
 import com.asl.prd004.config.ResultGenerator;
 import com.asl.prd004.dto.PageableDto;
+import com.asl.prd004.dto.SubCategoryRequestDto;
 import com.asl.prd004.entity.SubcategoryS;
 import com.asl.prd004.service.ISubcategoryService;
 import com.asl.prd004.utils.Log;
@@ -20,8 +21,8 @@ public class SubcategoryController {
 
     @Log("Get Subcategory list.")
     @PostMapping(value="/getAllSubcategory")
-    public ResultGenerator getAllSubcategory(@RequestBody PageableDto pageable) {
-        return ResultGenerator.getSuccessResult(subcategoryService.getAllSubcategory(pageable));
+    public ResultGenerator getAllSubcategory(@RequestBody SubCategoryRequestDto subCategoryRequestDto) {
+        return ResultGenerator.getSuccessResult(subcategoryService.getAllSubcategory(subCategoryRequestDto));
     }
 
     @Log("Get Subcategory list by Category Code.")

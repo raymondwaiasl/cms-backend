@@ -3,10 +3,7 @@ package com.asl.prd004.service.impl;
 import com.asl.prd004.config.ContextHolder;
 import com.asl.prd004.config.DefinitionException;
 import com.asl.prd004.config.ResultGenerator;
-import com.asl.prd004.dao.GroupDao;
-import com.asl.prd004.dao.MisUserDao;
-import com.asl.prd004.dao.OrgChartDao;
-import com.asl.prd004.dao.SysConfigDao;
+import com.asl.prd004.dao.*;
 import com.asl.prd004.dto.OrgChartDTO;
 import com.asl.prd004.dto.ResetPasswordDto;
 import com.asl.prd004.dto.UserDto;
@@ -46,22 +43,25 @@ public class UserInfoServiceImpl implements IUserInfoService {
     @Autowired
     SysConfigDao sysConfigDao;
 
+    @Autowired
+    RoleDao roleDao;
+
     @Override
     public ResultGenerator verifyLogin(UserDto dto) {
         List<MisUser> users = userDao.findByMisUserLoginId(dto.getLoginName());
         if (users.isEmpty()) {
-            return new ResultGenerator(401,"Login Failed! Account doesn't exit.");
+            return new ResultGenerator(401, "Login Failed! Account doesn't exit.");
         } else {
             MisUser user = users.get(0);
             Date date = new Date();
-            Date nextDate = new  Date(date.getTime() + JwtUtil.EXPIRE_SECONDS);
+            Date nextDate = new Date(date.getTime() + JwtUtil.EXPIRE_SECONDS);
             int loginAttempts = user.getLoginAttempts();
             if (user.isLocked()) {
                 System.out.println("Account is locked. Please contact the administrator.");
-                return new ResultGenerator(401,"Account is locked. Please contact the administrator.");
+                return new ResultGenerator(401, "Account is locked. Please contact the administrator.");
             }
             boolean isOk;
-            try{
+            try {
                 isOk = users.get(0).getMisUserPassword().equals(AESUtil.encryptAES(dto.getPwd()));
             } catch (Exception e) {
                 return new ResultGenerator(401, e.getMessage());
@@ -70,23 +70,27 @@ public class UserInfoServiceImpl implements IUserInfoService {
                 user.setLoginAttempts(0);
                 userDao.saveAndFlush(user);
 
-                String userRole="";
-                List<String> userRoleList= userDao.getUserRoles(user.getMisUserId());
-                if(!userRoleList.isEmpty())
-                 String.join(",", userRoleList);
+                String userRole = "";
+                List<String> userRoleIdList = userDao.getUserRoles(user.getMisUserId());
+                if (!userRoleIdList.isEmpty()) {
+
+                    List<String> roleNames = roleDao.getRoleNameByRoleIds(userRoleIdList);
+
+                    userRole = String.join(",", roleNames);
+                }
 
                 HashMap<String, Object> map = new HashMap<>(2);
-                map.put("userId",user.getMisUserId());
-                map.put("userLoginId",user.getMisUserLoginId());
-                map.put("office",StringUtils.defaultIfEmpty(user.getOffice(),""));
-                map.put("userRole",StringUtils.defaultIfEmpty(userRole,""));
+                map.put("userId", user.getMisUserId());
+                map.put("userLoginId", user.getMisUserLoginId());
+                map.put("office", StringUtils.defaultIfEmpty(user.getOffice(), ""));
+                map.put("userRole", StringUtils.defaultIfEmpty(userRole, ""));
                 String token = JwtUtil.generateToken(map);
                 HashMap<String, Object> resultMap = new HashMap<>(2);
-                resultMap.put("token",token);
-                resultMap.put("expire_time",nextDate);
-                resultMap.put("user_name",user.getMisUserName());
-                resultMap.put("is_change",user.isChange());
-                resultMap.put("is_admin",user.getIsAdmin());
+                resultMap.put("token", token);
+                resultMap.put("expire_time", nextDate);
+                resultMap.put("user_name", user.getMisUserName());
+                resultMap.put("is_change", user.isChange());
+                resultMap.put("is_admin", user.getIsAdmin());
                 return ResultGenerator.getSuccessResult(resultMap);
             } else {
                /*Comment for skip LDAP login
@@ -132,8 +136,8 @@ public class UserInfoServiceImpl implements IUserInfoService {
                 */
                 loginAttempts++;
                 int attemptTimes = 5;
-                MisSysConfig config =  sysConfigDao.getMisSysConfigByMisSysConfigKey("attemptTimes");
-                if(null != config){
+                MisSysConfig config = sysConfigDao.getMisSysConfigByMisSysConfigKey("attemptTimes");
+                if (null != config) {
                     String timesStr = config.getMisSysConfigValue();
                     if (timesStr.matches("\\d+")) {
                         attemptTimes = Integer.parseInt(timesStr);
@@ -144,12 +148,12 @@ public class UserInfoServiceImpl implements IUserInfoService {
                     user.setLocked(true);
                     userDao.saveAndFlush(user);
                     System.out.println("Account locked. Please contact the administrator.");
-                    return new ResultGenerator(401,"Account locked. Please contact the administrator.");
+                    return new ResultGenerator(401, "Account locked. Please contact the administrator.");
                 } else {
                     user.setLoginAttempts(loginAttempts);
                     userDao.saveAndFlush(user);
                     System.out.println("Invalid password. Attempt " + loginAttempts + " of 5.");
-                    return new ResultGenerator(401,"Invalid password. Attempt " + loginAttempts + " of "+ attemptTimes +".");
+                    return new ResultGenerator(401, "Invalid password. Attempt " + loginAttempts + " of " + attemptTimes + ".");
                 }
             }
 
@@ -201,7 +205,7 @@ public class UserInfoServiceImpl implements IUserInfoService {
         Map<String, Object> map = JwtUtil.resolveToken(dto.getToken());
         String userId = map.get("userId").toString();
         MisUser user = userDao.getMisUserByMisUserId(userId);
-        if(user != null){
+        if (user != null) {
             try {
                 user.setMisUserPassword(AESUtil.encryptAES(dto.getPassword()));
                 user.setLastPasswordChange(new Timestamp(System.currentTimeMillis()));
@@ -217,15 +221,15 @@ public class UserInfoServiceImpl implements IUserInfoService {
     }
 
     @Override
-    public String getGroupDefaultFolderByGroupId(){
+    public String getGroupDefaultFolderByGroupId() {
         MisUser user = userDao.getMisUserByMisUserId(ContextHolder.getUserId());
-        if(!StringUtils.isEmpty(user.getCurrentGroup())){
+        if (!StringUtils.isEmpty(user.getCurrentGroup())) {
             MisGroup userGroup = groupDao.getMisGroupByMisGroupId(user.getCurrentGroup());
             return userGroup.getMisGroupDefaultFolder();
-        }else{
+        } else {
             List<String> groupIds = orgChartDao.getGroupIdByUserId(ContextHolder.getUserId());
             //System.out.println("groupIds========================" + groupIds.get(0));
-            if(groupIds != null && groupIds.size() > 0){
+            if (groupIds != null && groupIds.size() > 0) {
                 MisGroup userGroup = groupDao.getMisGroupByMisGroupId(groupIds.get(0));
                 return userGroup.getMisGroupDefaultFolder();
             }
@@ -234,20 +238,20 @@ public class UserInfoServiceImpl implements IUserInfoService {
     }
 
     @Override
-    public ResultGenerator getPasswordPolicy(){
+    public ResultGenerator getPasswordPolicy() {
         Map<String, Object> resultMap = new HashMap<>();
         resultMap = addPasswordPolicyConfig("hasDigit", resultMap);
         resultMap = addPasswordPolicyConfig("hasLetters", resultMap);
         resultMap = addPasswordPolicyConfig("hasUpperLowerCase", resultMap);
         resultMap = addPasswordPolicyConfig("hasSpecialChar", resultMap);
         resultMap = addPasswordPolicyConfig("passwordLength", resultMap);
-        return  ResultGenerator.getSuccessResult(resultMap);
+        return ResultGenerator.getSuccessResult(resultMap);
     }
 
-    private Map<String, Object> addPasswordPolicyConfig(String key,Map<String, Object> map){
-        MisSysConfig config =  sysConfigDao.getMisSysConfigByMisSysConfigKey(key);
-        if(null != config){
-            map.put(key,config.getMisSysConfigValue());
+    private Map<String, Object> addPasswordPolicyConfig(String key, Map<String, Object> map) {
+        MisSysConfig config = sysConfigDao.getMisSysConfigByMisSysConfigKey(key);
+        if (null != config) {
+            map.put(key, config.getMisSysConfigValue());
         }
         return map;
     }

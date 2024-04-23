@@ -6,6 +6,7 @@ import com.asl.prd004.entity.IndicatorsTargetS;
 import com.asl.prd004.service.IIndicatorTargetService;
 import com.asl.prd004.utils.Log;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,13 +23,34 @@ public class IndicatorTargetController {
     IIndicatorTargetService indicatorTargetService;
 
     @Log("Get all Indicator Target list.")
-    @GetMapping(value = "/getIndicatorTargetList")
-    public ResultGenerator getIndicatorTargetList(@RequestBody SearchIndicatorTargetDto data) {
-        return ResultGenerator.getSuccessResult(indicatorTargetService.getIndicatorTargetList(data));
+    @PostMapping(value = "/getIndicatorTargetList")
+    public ResultGenerator getIndicatorTargetList(@RequestBody String data) throws Exception {
+
+        if (data == null || "".equals(data)) {
+            return ResultGenerator.getFailResult("参数为空!");
+        }
+
+        JSONObject json = new JSONObject(data);
+
+//        String categoryCode = json.getString("categoryCode");
+        String categoryCode = json.getString("categoryCode").isEmpty() ? "" : json.getString("categoryCode").trim();
+
+        String year = "";
+        if (json.has("year")) {
+            year = json.getString("year");
+        }
+
+        String lang = json.getString("lang");
+
+        JSONObject pageState = json.getJSONObject("pageState");
+
+        JSONObject sort = json.getJSONObject("sortModel");
+
+        return ResultGenerator.getSuccessResult(indicatorTargetService.getIndicatorTargetList(categoryCode, year, lang, pageState, sort));
     }
 
     @Log("Get Indicator Target details.")
-    @GetMapping(value = "/getIndicatorTargetDetail")
+    @PostMapping(value = "/getIndicatorTargetDetail")
     public ResultGenerator getIndicatorTargetDetail(@RequestBody String data) throws Exception {
         if (data == null || "".equals(data)) {
             return ResultGenerator.getFailResult("Parameter is empty\n!");
@@ -36,9 +58,10 @@ public class IndicatorTargetController {
 
         JSONObject json = new JSONObject(data);
 
-        String id = json.getString("id").isEmpty() ? "" : json.getString("id").trim();
+        String categoryCode = json.getString("categoryCode").isEmpty() ? "" : json.getString("categoryCode").trim();
+        Integer year = json.getInt("year");
 
-        return ResultGenerator.getSuccessResult(indicatorTargetService.getIndicatorTargetDetail(id));
+        return ResultGenerator.getSuccessResult(indicatorTargetService.getIndicatorTargetDetail(categoryCode, year));
     }
 
     @Log("Add Indicator Target.")
@@ -80,8 +103,8 @@ public class IndicatorTargetController {
 
         // when addIndicatorTarget: “year” and “indicator” need unique
         for (int i = 0; i < collect.size(); i++) {
-            if (indicatorTargetService.checkIndicatorTargetByIndCodeAndYear(collect.get(i).getIndCode(), collect.get(i).getYear())) {
-                return ResultGenerator.getFailResult("year and indicator need unique @2\n!");
+            if (indicatorTargetService.checkIndicatorTargetByIndCodeAndYear(collect.get(i).getIndCode(), collect.get(i).getYear(), collect.get(i).getMoluCode())) {
+                return ResultGenerator.getFailResult("IndCode, year and molu_code need unique\n!");
             }
         }
 
@@ -99,20 +122,9 @@ public class IndicatorTargetController {
             return ResultGenerator.getFailResult("Parameter is empty\n!");
         }
 
-        JSONObject json = new JSONObject(data);
-        String id = json.getString("id").isEmpty() ? "" : json.getString("id").trim();
-        String indCode = json.getString("indCode").isEmpty() ? "" : json.getString("indCode").trim();
-        String moluCode = json.getString("moluCode").isEmpty() ? "" : json.getString("moluCode").trim();
-        String year = json.getString("year").isEmpty() ? "" : json.getString("year").trim();
-        String target = json.getString("target").isEmpty() ? "" : json.getString("target").trim();
-        Integer yearInt = Integer.parseInt(year);
-        Double targetDouble = Double.parseDouble(target);
+        JSONArray jsonArray = new JSONArray(data);
 
-        if (moluCode.length() > 10 || indCode.length() > 10) {
-            return ResultGenerator.getFailResult("The length of moluCode or indCode must less than 10\n!");
-        }
-
-        if (indicatorTargetService.editIndicatorTarget(id, indCode, moluCode, yearInt, targetDouble)) {
+        if (indicatorTargetService.editIndicatorTarget(jsonArray)) {
             return ResultGenerator.getSuccessResult("success");
         } else {
             return ResultGenerator.getFailResult("failed");

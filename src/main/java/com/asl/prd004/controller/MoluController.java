@@ -3,6 +3,7 @@ package com.asl.prd004.controller;
 import com.asl.prd004.config.ResultGenerator;
 import com.asl.prd004.dto.PageableDto;
 import com.asl.prd004.dto.SearchMoluOfficeDto;
+import com.asl.prd004.entity.MoluOfficeS;
 import com.asl.prd004.service.IMoluService;
 import com.asl.prd004.utils.Log;
 import org.json.JSONException;
@@ -20,13 +21,13 @@ public class MoluController {
     IMoluService moluService;
 
     @Log("Get all Molu list.")
-    @GetMapping(value = "/getMoluList")
+    @PostMapping(value = "/getMoluList")
     public ResultGenerator getMoluList(@RequestBody SearchMoluOfficeDto data) {
         return ResultGenerator.getSuccessResult(moluService.getMoluList(data));
     }
 
     @Log("Get Molu details.")
-    @GetMapping(value = "/getMoluDetail")
+    @PostMapping(value = "/getMoluDetail")
     public ResultGenerator getMoluDetail(@RequestBody String data) throws Exception {
         if (data == null || "".equals(data)) {
             return ResultGenerator.getFailResult("Parameter is empty\n!");
@@ -40,7 +41,7 @@ public class MoluController {
     }
 
     @Log("Get Molu by moluType.")
-    @GetMapping(value = "/getMoluByType")
+    @PostMapping(value = "/getMoluByType")
     public ResultGenerator getMoluByType(@RequestBody String data) throws Exception {
         if (data == null || "".equals(data)) {
             return ResultGenerator.getFailResult("Parameter is empty\n!");
@@ -55,7 +56,7 @@ public class MoluController {
     }
 
     @Log("Get Molu by moCode.")
-    @GetMapping(value = "/getMoluByMOCode")
+    @PostMapping(value = "/getMoluByMOCode")
     public ResultGenerator getMoluByMOCode(@RequestBody String data) throws Exception {
         if (data == null || "".equals(data)) {
             return ResultGenerator.getFailResult("Parameter is empty\n!");
@@ -97,9 +98,15 @@ public class MoluController {
         }
 
         // when addMolu need check mo_code is unique
-        List<Object> listsByMoCode = moluService.getMoluByMOCode(moCode, "EN");
-        if (listsByMoCode.size() > 0) {
-            return ResultGenerator.getFailResult("mo code need be unique\n!");
+//        List<Object> listsByMoCode = moluService.getMoluByMOCode(moCode, "EN");
+//        if (listsByMoCode.size() > 0) {
+//            return ResultGenerator.getFailResult("mo code need be unique\n!");
+//        }
+
+        // check molu_code is unique
+        List<MoluOfficeS> listsByMoluCode = moluService.getMoluByMoluCode(moluCode);
+        if (listsByMoluCode.size() > 0) {
+            return ResultGenerator.getFailResult("molu code need be unique\n!");
         }
 
         if (moluService.addMolu(moluCode, moCode, moluType, moluNameEn, moluNameTc, activeIntValue)) {
@@ -118,7 +125,7 @@ public class MoluController {
 
         JSONObject json = new JSONObject(data);
         String id = json.getString("id").isEmpty() ? "" : json.getString("id").trim();
-        String moluCode = json.getString("moluCode").isEmpty() ? "" : json.getString("moluCode").trim();
+//        String moluCode = json.getString("moluCode").isEmpty() ? "" : json.getString("moluCode").trim();
         String moCode = json.getString("moCode").isEmpty() ? "" : json.getString("moCode").trim();
         String moluType = json.getString("moluType").isEmpty() ? "" : json.getString("moluType").trim();
         String moluNameEn = json.getString("moluNameEn").isEmpty() ? "" : json.getString("moluNameEn").trim();
@@ -126,8 +133,8 @@ public class MoluController {
         Boolean active = !json.getBoolean("active") ? false : json.getBoolean("active");
         int activeIntValue = active ? 1 : 0;
 
-        if (moluCode.length() > 10 || moCode.length() > 10) {
-            return ResultGenerator.getFailResult("The length of moluCode or moCode must less than 10\n!");
+        if (moCode.length() > 10) {
+            return ResultGenerator.getFailResult("The length of moCode must less than 10\n!");
         }
         if (moluNameTc.length() > 50) {
             return ResultGenerator.getFailResult("The length of moluNameTc must less than 50\n!");
@@ -136,7 +143,7 @@ public class MoluController {
             return ResultGenerator.getFailResult("The length of moluNameEn must less than 100\n!");
         }
 
-        if (moluService.editMolu(id, moluCode, moCode, moluType, moluNameEn, moluNameTc, activeIntValue)) {
+        if (moluService.editMolu(id, moCode, moluType, moluNameEn, moluNameTc, activeIntValue)) {
             return ResultGenerator.getSuccessResult("success");
         } else {
             return ResultGenerator.getFailResult("failed");
@@ -151,6 +158,14 @@ public class MoluController {
         }
         JSONObject json = new JSONObject(data);
         String id = json.getString("id").isEmpty() ? "" : json.getString("id").trim();
+
+        MoluOfficeS moluDetail = moluService.getMoluDetail(id);
+
+        // if form_input_request_office_s exists the Molu code not allow delete
+        if (moluService.checkRequestOfficeExistsMoluCode(moluDetail.getMoluCode())) {
+            return ResultGenerator.getFailResult("form input request office exists the Molu code not allow delete\n!");
+        }
+
         if (moluService.deleteMolu(id)) {
             return ResultGenerator.getSuccessResult("success");
         } else {

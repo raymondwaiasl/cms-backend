@@ -1,7 +1,6 @@
 package com.asl.prd004.config;
 
 import com.asl.prd004.utils.JwtUtil;
-import com.google.common.net.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -32,16 +31,6 @@ public class TokenInterceptor implements HandlerInterceptor {
 
         String url = request.getRequestURI().substring(request.getContextPath().length());
         System.out.println(url);
-
-        java.util.Enumeration<String> heaserlist= request.getHeaderNames();
-        while(heaserlist.hasMoreElements())
-        {
-            String header=heaserlist.nextElement();
-            System.out.println(header +":" + request.getHeader(header));
-        }
-        System.out.println("HttpHeaders.ORIGIN" +":" + request.getHeader(HttpHeaders.ORIGIN));
-        System.out.println("HttpHeaders.REFERER" +":" + request.getHeader(HttpHeaders.REFERER));
-
         // 登录和注册等请求不需要令牌
         AntPathMatcher matcher = new AntPathMatcher();
         for(String safeUrl:SAFE_URL_LIST){

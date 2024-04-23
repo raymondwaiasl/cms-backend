@@ -20,8 +20,18 @@ public interface MoluOfficeDao extends JpaRepository<MoluOfficeS, String> {
 
     MoluOfficeS findMoluOfficeById(String id);
 
+    @Query( value = "select * " +
+            "from molu_office_s where active = 1 and molu_type = ?1 ", nativeQuery = true)
     List<MoluOfficeS> findByMoluType(String moluType);
 
+    @Query( value = "select * " +
+            "from molu_office_s where active = 1 and mo_code = ?1 ", nativeQuery = true)
     List<MoluOfficeS> findByMoCode(String moCode);
 
+    List<MoluOfficeS> findByMoluCode(String moluCode);
+
+    List<MoluOfficeS> findByMoluCodeAndActive(String moluCode, Integer active);
+
+    @Query( value = "SELECT mo_code from molu_office_s mos where active = 1 GROUP BY mo_code ", nativeQuery = true)
+    List<String> findAllActiveMoCode();
 }

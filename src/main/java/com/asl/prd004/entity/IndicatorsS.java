@@ -45,4 +45,13 @@ public class IndicatorsS extends BaseModel implements Serializable {
     @Column(name = "active")
     private Integer active;
 
+    @Column(name = "ind_name_l2_en", length = 250)
+    private String subIndicatorNameEn;
+
+    @Column(name = "ind_name_l2_tc", length = 100)
+    private String subIndicatorNameTc;
+
+    @Transient
+    private String categoryCode;
+
 }

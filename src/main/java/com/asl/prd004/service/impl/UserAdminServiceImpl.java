@@ -191,6 +191,8 @@ public class UserAdminServiceImpl implements IUserAdminService {
         System.out.println("out================"+array);
         Specification<MisUser> specification =
                 Specifications.<MisUser>and()
+                        .like(StrUtil.isNotBlank(dto.getMisUserLoginId()), "misUserLoginId", "%" + dto.getMisUserLoginId() + "%")
+                        .like(StrUtil.isNotBlank(dto.getMisUserName()), "misUserName", "%" + dto.getMisUserName() + "%")
                         .like(StrUtil.isNotBlank(dto.getSurnameEng()), "surnameEng", "%" + dto.getSurnameEng() + "%")
                         .like(StrUtil.isNotBlank(dto.getGivenNameEng()), "givenNameEng", "%" + dto.getGivenNameEng() + "%")
                         .like(StrUtil.isNotBlank(dto.getOtherNameEng()), "otherNameEng", "%" + dto.getOtherNameEng() + "%")
@@ -198,8 +200,11 @@ public class UserAdminServiceImpl implements IUserAdminService {
                         .like(StrUtil.isNotBlank(dto.getMisEmail()), "misEmail", "%" + dto.getMisEmail() + "%")
                         .like(StrUtil.isNotBlank(dto.getFax()), "fax", "%" + dto.getFax() + "%")
                         .like(StrUtil.isNotBlank(dto.getTel()), "tel", "%" + dto.getTel() + "%")
+                        .like(StrUtil.isNotBlank(dto.getUserPost()), "userPost", "%" + dto.getUserPost() + "%")
                         .in(array.length > 0, "district", (Object[]) array)
                         .eq(StrUtil.isNotBlank(dto.getMisUserStatus()), "misUserStatus", dto.getMisUserStatus())
+                        .eq(StrUtil.isNotBlank(dto.getMisUserType()), "misUserType", dto.getMisUserType())
+                        .eq(StrUtil.isNotBlank(dto.getOffice()), "office", dto.getOffice())
                         .build();
         Pageable page;
         if (StringUtils.isNotEmpty(dto.getPageable().getSortModel().getField())) {

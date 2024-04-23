@@ -4,41 +4,47 @@ package com.asl.prd004.config;
  * @author llh
  */
 public class ContextHolder {
-    public static ThreadLocal<String> context = new ThreadLocal<>();
+    public static ThreadLocal<String> userIdContext = new ThreadLocal<>();
+    public static ThreadLocal<String> loginIdContext = new ThreadLocal<>();
+    public static ThreadLocal<String> officeContext = new ThreadLocal<>();
+    public static ThreadLocal<String> userRoleContext = new ThreadLocal<>();
 
     public static void setUserId(String userId) {
-        context.set(userId);
+        userIdContext.set(userId);
     }
 
     public static String getUserId() {
-        return context.get();
+        return userIdContext.get();
     }
 
     public static void setUserLoginId(String userLoginId) {
-        context.set(userLoginId);
+        loginIdContext.set(userLoginId);
     }
 
     public static String getUserLoginId() {
-        return context.get();
+        return loginIdContext.get();
     }
 
     public static void setOffice(String office) {
-        context.set(office);
+        officeContext.set(office);
     }
 
     public static String getOffice() {
-        return context.get();
+        return officeContext.get();
     }
 
     public static void setUserRole(String userRole) {
-        context.set(userRole);
+        userRoleContext.set(userRole);
     }
 
     public static String getUserRole() {
-        return context.get();
+        return userRoleContext.get();
     }
 
     public static void shutdown() {
-        context.remove();
+        userIdContext.remove();
+        loginIdContext.remove();
+        officeContext.remove();
+        userRoleContext.remove();
     }
 }

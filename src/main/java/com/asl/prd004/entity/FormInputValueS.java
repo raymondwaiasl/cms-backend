@@ -1,5 +1,6 @@
 package com.asl.prd004.entity;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
@@ -10,6 +11,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "form_input_value_s")
+@Data
 public class FormInputValueS extends BaseModel implements Serializable {
 
     @Id

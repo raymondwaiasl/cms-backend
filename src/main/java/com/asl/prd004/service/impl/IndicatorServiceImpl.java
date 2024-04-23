@@ -1,35 +1,30 @@
 package com.asl.prd004.service.impl;
 
-import cn.hutool.core.util.StrUtil;
-import com.asl.prd004.config.DefinitionException;
-import com.asl.prd004.config.ResultGenerator;
 import com.asl.prd004.dao.CategoryDao;
-import com.asl.prd004.dao.FormInputRequestIncidatorDao;
+import com.asl.prd004.dao.FormInputRequestIndicatorDao;
 import com.asl.prd004.dao.IndicatorDao;
 import com.asl.prd004.dao.SubcategoryDao;
+import com.asl.prd004.dto.IndicatorDetailDto;
 import com.asl.prd004.dto.IndicatorDto;
 import com.asl.prd004.dto.PageDataDto;
-import com.asl.prd004.dto.SearchIndicatorDto;
 import com.asl.prd004.entity.CategoryS;
 import com.asl.prd004.entity.FormInputRequestindicatorS;
 import com.asl.prd004.entity.IndicatorsS;
 import com.asl.prd004.entity.SubcategoryS;
 import com.asl.prd004.service.IIndicatorService;
-import com.github.wenhao.jpa.Specifications;
-import org.apache.commons.lang.StringUtils;
-import org.hibernate.Session;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,58 +40,60 @@ public class IndicatorServiceImpl implements IIndicatorService {
     private SubcategoryDao subcategoryDao;
 
     @Autowired
-    FormInputRequestIncidatorDao formInputRequestIncidatorDao;
+    FormInputRequestIndicatorDao formInputRequestIndicatorDao;
 
     @Autowired
     EntityManager entityManager;
 
     @Override
-    public PageDataDto getIndicatorList(SearchIndicatorDto dto) {
+    public PageDataDto<Map<String, Object>> getIndicatorList(String categoryCode, String subCategoryCode, String indicatorCode,
+                                                             String indicatorName, Integer active, String lang, JSONObject pageState, JSONObject sort) {
 
-        Specification<IndicatorsS> specification =
-                Specifications.<IndicatorsS>and()
-                        .like(StrUtil.isNotBlank(dto.getSubCategoryCode()), "subCategoryCode", "%" + dto.getSubCategoryCode() + "%")
-                        .like(StrUtil.isNotBlank(dto.getIndCode()), "indCode", "%" + dto.getIndCode() + "%")
-                        .eq(StrUtil.isNotBlank(dto.getActive()), "active", "true".equalsIgnoreCase(dto.getActive()) ? 1 : 0)
-                        .build();
+        PageDataDto<Map<String, Object>> indicatorsSPageDataDto = null;
+        try {
+            int pageNum = pageState.getInt("page") - 1;
+            int pageSize = pageState.getInt("pageSize");
 
-        Pageable page;
-        if (StringUtils.isNotEmpty(dto.getSortModel().getField())) {
-            String sortField = dto.getSortModel().getField();
-            switch (sortField) {
-                case "indicatorCode":
-                    sortField = "indicatorCode";
-                    break;
+            Pageable pageable;
+
+            String sortField = "indicatorId";
+
+            if (!sort.getString("field").isEmpty()) {
+                sortField = sort.getString("field");
+                if (sortField.equals("categoryCode")) sortField = "ss.category_code";
             }
-            if (dto.getSortModel().getSort().equalsIgnoreCase("asc")) {
-                page = PageRequest.of(dto.getPageState().getPage() - 1, dto.getPageState().getPageSize(), Sort.by(sortField).ascending());
+
+            if (sort.getString("sort").equalsIgnoreCase("asc")) {
+                pageable = PageRequest.of(pageNum, pageSize, Sort.by(sortField).ascending());
             } else {
-                page = PageRequest.of(dto.getPageState().getPage() - 1, dto.getPageState().getPageSize(), Sort.by(sortField).descending());
+                pageable = PageRequest.of(pageNum, pageSize, Sort.by(sortField).descending());
             }
-        } else {
-            page = PageRequest.of(dto.getPageState().getPage() - 1, dto.getPageState().getPageSize());
+
+            Page<Map<String, Object>> indicatorList = indicatorDao.findAll(categoryCode,subCategoryCode, indicatorCode, indicatorName, active, lang, pageable);
+            List<Map<String, Object>> contents = indicatorList.getContent();
+
+
+            indicatorsSPageDataDto = new PageDataDto<>();
+
+            indicatorsSPageDataDto.setData(contents);
+
+            indicatorsSPageDataDto.setTotal(indicatorList.getTotalElements());
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        Page<IndicatorsS> indicatorPage = indicatorDao.findAll(specification, page);
-        List<IndicatorsS> list = indicatorPage.getContent();
-        Session session = entityManager.unwrap(Session.class);
-        //jpa默认在实体属性set之后自动提交到数据库，这里不需要提交到库，直接清缓存
-        session.clear();
-
-        PageDataDto pageDataDto = new PageDataDto(list, indicatorPage.getTotalElements());
-
-        return pageDataDto;
+        return indicatorsSPageDataDto;
     }
 
     @Override
-    public IndicatorDto getIndicatorDetail(String id) {
-        IndicatorDto indicatorDto = indicatorDao.findIndicatorsById(id);
-        return indicatorDto;
+    public IndicatorDetailDto getIndicatorDetail(String id) {
+        return indicatorDao.findIndicatorsById(id);
     }
 
     @Override
     public boolean addIndicator(String categoryCode, String subCategoryCode, String indicatorCode, String indicatorNameEn,
-                                String indicatorNameTc, String dataType, String currency, Integer active) {
+                                String indicatorNameTc, String dataType, String currency, Integer active, String subIndicatorNameEn, String subIndicatorNameTc) {
         try {
             //1. categoryCode exists in category_s
             List<CategoryS> categorySList = categoryDao.findCategoryByCategoryCode(categoryCode);
@@ -105,9 +102,9 @@ public class IndicatorServiceImpl implements IIndicatorService {
                 return false;
             }
 
-            // 2. subcategoryCode exists in subcategory_s
-            List<SubcategoryS> subcategoryBySubcategoryCode = subcategoryDao.findSubcategoryBySubcategoryCode(subCategoryCode);
-            if (subcategoryBySubcategoryCode == null || subcategoryBySubcategoryCode.isEmpty()) {
+            // 2.categoryCode and subcategoryCode exists in subcategory_s
+            SubcategoryS subcategory = subcategoryDao.findByCategoryCodeAndSubcategoryCode(categoryCode, subCategoryCode);
+            if (subcategory == null) {
                 return false;
             }
 
@@ -123,7 +120,10 @@ public class IndicatorServiceImpl implements IIndicatorService {
             indicatorsS.setIndNameEn(indicatorNameEn);
             indicatorsS.setIndNameTc(indicatorNameTc);
             indicatorsS.setDataType(dataType);
+            indicatorsS.setCurrency(currency);
             indicatorsS.setActive(active);
+            indicatorsS.setSubIndicatorNameEn(subIndicatorNameEn);
+            indicatorsS.setSubIndicatorNameTc(subIndicatorNameTc);
             indicatorDao.saveAndFlush(indicatorsS);
             return true;
         } catch (Exception e) {
@@ -135,7 +135,7 @@ public class IndicatorServiceImpl implements IIndicatorService {
 
     @Override
     public boolean editIndicator(String id, String categoryCode, String subCategoryCode, String indicatorCode, String indicatorNameEn,
-                                 String indicatorNameTc, String dataType, String currency, Integer active) {
+                                 String indicatorNameTc, String dataType, String currency, Integer active, String subIndicatorNameEn, String subIndicatorNameTc) {
         //1. categoryCode exists in category_s
         List<CategoryS> categorySList = categoryDao.findCategoryByCategoryCode(categoryCode);
         if (categorySList == null || categorySList.isEmpty()) {
@@ -155,7 +155,10 @@ public class IndicatorServiceImpl implements IIndicatorService {
             indicatorsS.setIndNameEn(indicatorNameEn);
             indicatorsS.setIndNameTc(indicatorNameTc);
             indicatorsS.setDataType(dataType);
+            indicatorsS.setCurrency(currency);
             indicatorsS.setActive(active);
+            indicatorsS.setSubIndicatorNameEn(subIndicatorNameEn);
+            indicatorsS.setSubIndicatorNameTc(subIndicatorNameTc);
             indicatorDao.saveAndFlush(indicatorsS);
             return true;
         } else {
@@ -168,7 +171,7 @@ public class IndicatorServiceImpl implements IIndicatorService {
         try {
             IndicatorsS indicatorsS = indicatorDao.findById(id).get();
             if (indicatorsS != null) {
-                List<FormInputRequestindicatorS> formInputRequestIncidators = formInputRequestIncidatorDao.findFormInputRequestIncidatorByIndCode(indicatorsS.getIndCode());
+                List<FormInputRequestindicatorS> formInputRequestIncidators = formInputRequestIndicatorDao.findFormInputRequestIncidatorByIndCode(indicatorsS.getIndCode());
                 if (formInputRequestIncidators.size() > 0) {
                     return false;
                 }
@@ -196,16 +199,25 @@ public class IndicatorServiceImpl implements IIndicatorService {
             categoryMap.put("categoryName", categorySList.get(0).getCategoryNameTc());
         }
 
+        ArrayList<Object> subCategoryRes = new ArrayList<>();
+        for (SubcategoryS subcategoryS : subcategoryList) {
+            subCategoryRes.add(
+                    Map.of(
+                            "subCategoryCode", subcategoryS.getSubcategoryCode(),
+                            "subCategoryName", "EN".equals(lang) ? subcategoryS.getSubcategoryNameEn() : subcategoryS.getSubcategoryNameTc()
+                    )
+            );
+        }
+
         List<String> subCategoryCodes = subcategoryList.stream()
                 .map(SubcategoryS::getSubcategoryCode)
                 .collect(Collectors.toList());
 
-        List<IndicatorDto> indicatorDtos = indicatorDao.findIndicatorsSubCategoryCode(subCategoryCodes);
+        List<Map<String, Object>> indicatorListBySubCategoryCodes = indicatorDao.findBySubCategoryCodes(subCategoryCodes, lang);
 
         resMap.put("category", categoryMap);
-        resMap.put("subCategory", subcategoryList);
-        resMap.put("indicator", indicatorDtos);
-
+        resMap.put("subCategory", subCategoryRes);
+        resMap.put("indicator", indicatorListBySubCategoryCodes);
 
         return resMap;
     }

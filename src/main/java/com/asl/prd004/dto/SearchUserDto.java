@@ -13,6 +13,7 @@ public class SearchUserDto {
 
 
 
+    private String misUserLoginId;
     private String misUserName;
     private String surnameEng;
     private String givenNameEng;
@@ -22,5 +23,8 @@ public class SearchUserDto {
     private String tel;
     private String fax;
     private String misUserStatus;
+    private String userPost;
+    private String misUserType;
+    private String office;
     private PageableDto pageable;
 }

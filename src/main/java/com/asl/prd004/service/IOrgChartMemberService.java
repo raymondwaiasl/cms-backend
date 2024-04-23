@@ -84,4 +84,6 @@ public interface IOrgChartMemberService {
 
     PageDataDto queryAllGroupData(JSONObject pageState, JSONObject sort);
 
+    void insertUserRole(String roleId, String userId);
+
 }

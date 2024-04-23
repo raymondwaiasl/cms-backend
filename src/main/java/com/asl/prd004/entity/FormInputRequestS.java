@@ -1,15 +1,20 @@
 package com.asl.prd004.entity;
 
 
+import com.asl.prd004.dto.FormInputRequestPeriodDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 
 @Entity
 @Table(name = "form_input_request_s")
+@Data
 public class FormInputRequestS extends BaseModel implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "seqGenerator")
@@ -30,10 +35,12 @@ public class FormInputRequestS extends BaseModel implements Serializable {
     private String categoryCode;
 
     @Temporal(TemporalType.DATE)
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @Column(name = "input_start_date")
     private Date inputStartDate;
 
     @Temporal(TemporalType.DATE)
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @Column(name = "input_end_date")
     private Date inputEndDate;
 
@@ -43,4 +50,18 @@ public class FormInputRequestS extends BaseModel implements Serializable {
     @Column(name = "form_input_request_status", length = 10)
     private String formInputRequestStatus;
 
+    @Transient
+    private List<String> indicators;
+
+    @Transient
+    private List<String> molus;
+
+    @Transient
+    private List<FormInputRequestPeriodDto> period;
+
+    @Transient
+    private String category;
+
+    @Transient
+    private String dataPeriodType;
 }

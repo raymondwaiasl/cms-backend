@@ -39,6 +39,9 @@ public class OrgChartMemberServiceImpl implements IOrgChartMemberService {
     @Autowired
     EntityManager entityManager;
 
+    @Autowired
+    private UserRoleDao userRoleDao;
+
     @Override
     public List<OrgChartDTO> findAllOrgChartData() {
         // 获取数据库中带有有父子关系的数据
@@ -513,6 +516,14 @@ public class OrgChartMemberServiceImpl implements IOrgChartMemberService {
             throw new RuntimeException(e);
         }
         return orgDto;
+    }
+
+    @Override
+    public void insertUserRole(String roleId, String userId) {
+        MisUserRole misUserRole = new MisUserRole();
+        misUserRole.setMisUserId(userId);
+        misUserRole.setMisRoleId(roleId);
+        userRoleDao.save(misUserRole);
     }
 
 }

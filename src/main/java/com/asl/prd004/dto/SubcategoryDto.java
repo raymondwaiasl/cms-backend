@@ -16,24 +16,4 @@ public class SubcategoryDto {
     private String subcategoryNameEn;
     private String subcategoryNameTc;
 
-
-    public String getId() {
-        return id;
-    }
-
-    public String getCategoryCode() {
-        return categoryCode;
-    }
-
-    public String getSubcategoryCode() {
-        return subcategoryCode;
-    }
-    public String getSubcategoryNameEn() {
-        return subcategoryNameEn;
-    }
-
-    public String getSubcategoryNameTc() {
-        return subcategoryNameTc;
-    }
-
 }

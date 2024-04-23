@@ -4,16 +4,21 @@ import cn.hutool.core.util.StrUtil;
 import com.asl.prd004.dao.CategoryDao;
 import com.asl.prd004.dao.IndicatorDao;
 import com.asl.prd004.dao.IndicatorsTargetDao;
+import com.asl.prd004.dao.SubcategoryDao;
+import com.asl.prd004.dto.IndicatorDto;
+import com.asl.prd004.dto.IndicatorTargetDetailDto;
 import com.asl.prd004.dto.PageDataDto;
 import com.asl.prd004.dto.SearchIndicatorTargetDto;
 import com.asl.prd004.entity.IndicatorsS;
 import com.asl.prd004.entity.IndicatorsTargetS;
-import com.asl.prd004.entity.MoluOfficeS;
+import com.asl.prd004.entity.SubcategoryS;
 import com.asl.prd004.service.IIndicatorTargetService;
-import com.asl.prd004.utils.AESUtil;
 import com.github.wenhao.jpa.Specifications;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Session;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,11 +26,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class IndicatorTargetServiceImpl implements IIndicatorTargetService {
@@ -40,65 +48,31 @@ public class IndicatorTargetServiceImpl implements IIndicatorTargetService {
     private CategoryDao categoryDao;
 
     @Autowired
+    private SubcategoryDao subcategoryDao;
+
+    @Autowired
     EntityManager entityManager;
 
     @Override
-    public PageDataDto getIndicatorTargetList(SearchIndicatorTargetDto dto) {
+    public List<IndicatorTargetDetailDto> getIndicatorTargetDetail(String categoryCode, Integer year) {
+        List<SubcategoryS> subcategorys = subcategoryDao.findSubcategoryByCategoryCode(categoryCode);
+        List<String> subCategoryCodeList = subcategorys.stream().map(SubcategoryS::getSubcategoryCode).collect(Collectors.toList());
+        List<IndicatorDto> indicatorDtoList = indicatorDao.findIndicatorsSubCategoryCode(subCategoryCodeList);
 
-        Specification<IndicatorsTargetS> specification =
-                Specifications.<IndicatorsTargetS>and()
-                        .like(StrUtil.isNotBlank(dto.getCategoryCode()), "categoryCode", "%" + dto.getCategoryCode() + "%")
-                        .eq(StrUtil.isNotBlank(dto.getYear()), "year", dto.getYear())
-                        .build();
-
-        Pageable page;
-        if (StringUtils.isNotEmpty(dto.getSortModel().getField())) {
-            String sortField = dto.getSortModel().getField();
-            switch (sortField) {
-                case "indicatorCode":
-                    sortField = "indicatorCode";
-                    break;
-            }
-            if (dto.getSortModel().getSort().equalsIgnoreCase("asc")) {
-                page = PageRequest.of(dto.getPageState().getPage() - 1, dto.getPageState().getPageSize(), Sort.by(sortField).ascending());
-            } else {
-                page = PageRequest.of(dto.getPageState().getPage() - 1, dto.getPageState().getPageSize(), Sort.by(sortField).descending());
-            }
-        } else {
-            page = PageRequest.of(dto.getPageState().getPage() - 1, dto.getPageState().getPageSize());
+        List<String> indCodeList = new ArrayList<>();
+        for (IndicatorDto indicatorDto : indicatorDtoList) {
+            indCodeList.add(indicatorDto.getIndCode());
         }
 
-        Page<IndicatorsTargetS> indicatorPage = indicatorsTargetDao.findAll(specification, page);
-        List<IndicatorsTargetS> list = indicatorPage.getContent();
-        Session session = entityManager.unwrap(Session.class);
-        //jpa默认在实体属性set之后自动提交到数据库，这里不需要提交到库，直接清缓存
-        session.clear();
+        List<IndicatorTargetDetailDto> indicatorsTargetSList = indicatorsTargetDao.findAllByIndCodeSAndYear(indCodeList, year);
 
-        List<Object> resultDataList = new ArrayList<>();
-
-        if (list != null) {
-            for (IndicatorsTargetS indicatorsTargetS : list) {
-                HashMap<String, Object> map = new HashMap<>();
-                map.put("year", indicatorsTargetS.getYear());
-                map.put("categoryCode", indicatorsTargetDao.findCategoryByIndCode(indicatorsTargetS.getIndCode()).getCategoryCode());
-                resultDataList.add(map);
-            }
-        }
-
-        PageDataDto pageDataDto = new PageDataDto(resultDataList, indicatorPage.getTotalElements());
-
-        return pageDataDto;
+        return indicatorsTargetSList;
     }
 
     @Override
-    public IndicatorsTargetS getIndicatorTargetDetail(String id) {
-        return indicatorsTargetDao.findById(id).get();
-    }
-
-    @Override
-    public Boolean checkIndicatorTargetByIndCodeAndYear(String indCode, Integer year) {
-        List<IndicatorsTargetS> indicatorTargets = indicatorsTargetDao.findIndicatorTargetsByIndCodeAndYear(indCode, year);
-        return indicatorTargets != null && indicatorTargets.size() > 0;
+    public Boolean checkIndicatorTargetByIndCodeAndYear(String indCode, Integer year, String moluCode) {
+        IndicatorsTargetS indicatorsTargetS = indicatorsTargetDao.findIndicatorTargetsByIndCodeAndYearAndMoluCode(indCode, year, moluCode);
+        return indicatorsTargetS != null;
     }
 
     @Override
@@ -129,16 +103,26 @@ public class IndicatorTargetServiceImpl implements IIndicatorTargetService {
     }
 
     @Override
-    public boolean editIndicatorTarget(String id, String indCode, String moluCode, Integer year, Double target) {
-        IndicatorsTargetS indicatorsTargetS = indicatorsTargetDao.findById(id).get();
-        if (indicatorsTargetS != null) {
-            indicatorsTargetS.setIndCode(indCode);
-            indicatorsTargetS.setMoluCode(moluCode);
-            indicatorsTargetS.setYear(year);
-            indicatorsTargetS.setTarget(target);
-            indicatorsTargetDao.saveAndFlush(indicatorsTargetS);
+    @Transactional
+    public boolean editIndicatorTarget(JSONArray jsonArray) {
+        try {
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject json = jsonArray.getJSONObject(i);
+                String indCode = json.getString("indCode").isEmpty() ? "" : json.getString("indCode").trim();
+                String moluCode = json.getString("moluCode").isEmpty() ? "" : json.getString("moluCode").trim();
+                Integer year = json.getInt("year");
+                double target = json.getDouble("target");
+
+                IndicatorsTargetS indicatorTarget = indicatorsTargetDao.findIndicatorTargetsByIndCodeAndYearAndMoluCode(indCode, year, moluCode);
+
+                if (indicatorTarget != null) {
+                    indicatorTarget.setTarget(target);
+                    indicatorsTargetDao.save(indicatorTarget);
+                }
+            }
             return true;
-        } else {
+        } catch (JSONException e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -152,6 +136,44 @@ public class IndicatorTargetServiceImpl implements IIndicatorTargetService {
             //throw new RuntimeException(e);
             return false;
         }
+    }
+
+    @Override
+    public Object getIndicatorTargetList(String categoryCode, String year, String lang, JSONObject pageState, JSONObject sort) {
+
+        PageDataDto<Map<String, Object>> pageDataDto = null;
+        try {
+            int pageNum = pageState.getInt("page") - 1;
+            int pageSize = pageState.getInt("pageSize");
+
+            Pageable pageable;
+
+            String sortField = "t.category_code";
+
+            if (!sort.getString("field").isEmpty()) {
+                sortField = sort.getString("field");
+                if (sortField.equals("categoryCode")) sortField = "t.category_code";
+            }
+
+            if (sort.getString("sort").equalsIgnoreCase("asc")) {
+                pageable = PageRequest.of(pageNum, pageSize, Sort.by(sortField).ascending());
+            } else {
+                pageable = PageRequest.of(pageNum, pageSize, Sort.by(sortField).descending());
+            }
+
+            Page<Map<String, Object>> pageList = indicatorsTargetDao.findAll(categoryCode, year, lang, pageable);
+
+            pageDataDto = new PageDataDto<>();
+
+            pageDataDto.setData(pageList.getContent());
+
+            pageDataDto.setTotal(pageList.getTotalElements());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return pageDataDto;
     }
 
 }

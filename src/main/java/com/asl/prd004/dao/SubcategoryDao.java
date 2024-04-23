@@ -18,10 +18,12 @@ public interface SubcategoryDao extends JpaRepository<SubcategoryS, String> {
 
     SubcategoryS  findSubcategoryById(String id);
 
-
+    @Query( value = "select * from subcategory_s where if(?1 != '', category_code = ?1, 1=1)", nativeQuery = true)
     List<SubcategoryS>  findSubcategoryByCategoryCode(String categoryCode);
 
     List<SubcategoryS>  findSubcategoryBySubcategoryCode(String categoryCode);
+
+    SubcategoryS findByCategoryCodeAndSubcategoryCode(String categoryCode, String subcategoryCode);
 
 }
 

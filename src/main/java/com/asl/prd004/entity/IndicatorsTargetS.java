@@ -41,11 +41,11 @@ public class IndicatorsTargetS extends BaseModel implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         IndicatorsTargetS that = (IndicatorsTargetS) o;
-        return Objects.equals(indCode, that.indCode) && Objects.equals(year, that.year);
+        return Objects.equals(moluCode, that.moluCode) && Objects.equals(indCode, that.indCode) && Objects.equals(year, that.year);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), indCode, year);
+        return Objects.hash(super.hashCode(), moluCode, indCode, year);
     }
 }

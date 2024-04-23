@@ -1,6 +1,7 @@
 package com.asl.prd004.entity;
 
 
+import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -9,6 +10,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "form_input_request_period_s")
+@Data
 public class FormInputRequestPeriodS extends BaseModel implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "seqGenerator")
@@ -33,5 +35,4 @@ public class FormInputRequestPeriodS extends BaseModel implements Serializable {
 
     @Column(name = "data_period_type", length = 10)
     private String dataPeriodType;
-
 }

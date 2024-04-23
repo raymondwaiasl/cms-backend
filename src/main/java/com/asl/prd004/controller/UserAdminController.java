@@ -51,6 +51,7 @@ public class UserAdminController {
             }
             String misUserLoginId = json.getString("misUserLoginId");
             String misUserName = json.getString("misUserName");
+            String misUserType = json.getString("userAccountType");
             String surnameEng = json.getString("surnameEng");
             String givenNameEng = json.getString("givenNameEng");
             String otherNameEng = json.getString("otherNameEng");
@@ -67,11 +68,17 @@ public class UserAdminController {
             if(json.has("currentGroup")){
                 currentGroup = json.getString("currentGroup");
             }
+            String userPost = "";
+            if(json.has("userPost")) {
+                userPost = json.getString("userPost");
+            }
+            String office = json.getString("office");
             String isLocked = json.getString("isLocked");
             MisUser misUser=new MisUser();
             misUser.setMisUserId(misUserId);
             misUser.setMisUserLoginId(misUserLoginId==null?"":misUserLoginId);
             misUser.setMisUserName(misUserName==null?"":misUserName);
+            misUser.setMisUserType(misUserType==null?"":misUserType);
             misUser.setSurnameEng(surnameEng==null?"":surnameEng);
             misUser.setGivenNameEng(givenNameEng==null?"":givenNameEng);
             misUser.setOtherNameEng(otherNameEng==null?"":otherNameEng);
@@ -85,6 +92,8 @@ public class UserAdminController {
             misUser.setLocked(isLocked.equals("Y") ? true : false);
             misUser.setMisUserStatus(misUserStatus);
             misUser.setCurrentGroup(currentGroup);
+            misUser.setUserPost(userPost);
+            misUser.setOffice(office);
             misUser.setCreateBy(ContextHolder.getUserId());
             misUser.setCreateTime(Timestamp.valueOf((new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(System.currentTimeMillis())));
             String misNewUserId=userAdminService.updateUserInfo(misUser);

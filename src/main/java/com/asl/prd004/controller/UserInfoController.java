@@ -31,11 +31,6 @@ public class UserInfoController {
     @Log("User login")
     @PostMapping(value="/login")
     public ResultGenerator<Map<String,Object>> login(@RequestBody UserDto dto){
-
-
-
-
-
         return userInfoService.verifyLogin(dto);
 //        Date date = new Date();
 //        Date nextDate = new  Date(date.getTime() + JwtUtil.EXPIRE_SECONDS);

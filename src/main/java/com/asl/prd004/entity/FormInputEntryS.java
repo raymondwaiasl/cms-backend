@@ -1,10 +1,14 @@
 package com.asl.prd004.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 
+@Data
 @Entity
 @Table(name = "form_input_entry_s")
 public class FormInputEntryS extends BaseModel  implements Serializable {
@@ -18,63 +22,34 @@ public class FormInputEntryS extends BaseModel  implements Serializable {
     private String formInputRequestID;
 
 
-    @Column(name = "workflow_type", nullable = false)
+    @Column(name = "workflow_type")
     private Integer workflowType;
 
     @Column(name = "mo_code", nullable = false, length = 10)
     private String moCode;
 
-    @Column(name = "molu_code", nullable = false, length = 10)
+    @Column(name = "molu_code", length = 10)
     private String moluCode;
 
     @Column(name = "form_input_status", nullable = false, length = 10)
     private String formInputStatus;
 
-    public String getId() {
-        return id;
-    }
+    @Column(name = "data_period_type", nullable = false, length = 10)
+    private String dataPeriodType;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    @Transient
+    private String category;
+    @Transient
+    private String formInputRequestId;
+    @Transient
+    private String refNum;
+    @Transient
+    private String formInputRequestTitle;
+    @Transient
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date inputEndDate;
+    @Transient
+    private String updatedUser;
 
-    public String getFormInputRequestID() {
-        return formInputRequestID;
-    }
 
-    public void setFormInputRequestID(String formInputRequestID) {
-        this.formInputRequestID = formInputRequestID;
-    }
-
-    public Integer getWorkflowType() {
-        return workflowType;
-    }
-
-    public void setWorkflowType(Integer workflowType) {
-        this.workflowType = workflowType;
-    }
-
-    public String getMoCode() {
-        return moCode;
-    }
-
-    public void setMoCode(String moCode) {
-        this.moCode = moCode;
-    }
-
-    public String getMoluCode() {
-        return moluCode;
-    }
-
-    public void setMoluCode(String moluCode) {
-        this.moluCode = moluCode;
-    }
-
-    public String getFormInputStatus() {
-        return formInputStatus;
-    }
-
-    public void setFormInputStatus(String formInputStatus) {
-        this.formInputStatus = formInputStatus;
-    }
 }

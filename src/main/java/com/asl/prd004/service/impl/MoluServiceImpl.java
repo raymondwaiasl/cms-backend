@@ -1,15 +1,12 @@
 package com.asl.prd004.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.asl.prd004.dao.FormInputRequestOfficeDao;
 import com.asl.prd004.dao.MoluOfficeDao;
-import com.asl.prd004.dto.MoluOfficeDto;
 import com.asl.prd004.dto.PageDataDto;
-import com.asl.prd004.dto.PageableDto;
 import com.asl.prd004.dto.SearchMoluOfficeDto;
-import com.asl.prd004.entity.MisUser;
 import com.asl.prd004.entity.MoluOfficeS;
 import com.asl.prd004.service.IMoluService;
-import com.asl.prd004.utils.AESUtil;
 import com.asl.prd004.utils.SerialNumberUtils;
 import com.github.wenhao.jpa.Specifications;
 import org.apache.commons.lang.StringUtils;
@@ -32,6 +29,9 @@ public class MoluServiceImpl implements IMoluService {
 
     @Autowired
     private MoluOfficeDao moluOfficeDao;
+
+    @Autowired
+    private FormInputRequestOfficeDao formInputRequestOfficeDao;
 
     @Autowired
     EntityManager entityManager;
@@ -143,6 +143,11 @@ public class MoluServiceImpl implements IMoluService {
     }
 
     @Override
+    public List<MoluOfficeS> getMoluByMoluCode(String moluCode) {
+        return moluOfficeDao.findByMoluCode(moluCode);
+    }
+
+    @Override
     public boolean addMolu(String moluCode, String moCode, String moluType,
                            String moluNameEn, String moluNameTc, int activeIntValue) {
         try {
@@ -163,11 +168,10 @@ public class MoluServiceImpl implements IMoluService {
     }
 
     @Override
-    public boolean editMolu(String id, String moluCode, String moCode, String moluType,
+    public boolean editMolu(String id, String moCode, String moluType,
                             String moluNameEn, String moluNameTc, int activeIntValue) {
         MoluOfficeS moluOfficeS = moluOfficeDao.findById(id).get();
         if (moluOfficeS != null) {
-            moluOfficeS.setMoluCode(moluCode);
             moluOfficeS.setMoCode(moCode);
             moluOfficeS.setMoluType(moluType);
             moluOfficeS.setMoluNameEn(moluNameEn);
@@ -189,6 +193,11 @@ public class MoluServiceImpl implements IMoluService {
             //throw new RuntimeException(e);
             return false;
         }
+    }
+
+    @Override
+    public boolean checkRequestOfficeExistsMoluCode(String moluCode) {
+        return formInputRequestOfficeDao.findByMoluCode(moluCode).size() > 0;
     }
 
 

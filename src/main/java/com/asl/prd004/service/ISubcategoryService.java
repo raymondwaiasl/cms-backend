@@ -2,6 +2,7 @@ package com.asl.prd004.service;
 
 import com.asl.prd004.dto.PageDataDto;
 import com.asl.prd004.dto.PageableDto;
+import com.asl.prd004.dto.SubCategoryRequestDto;
 import com.asl.prd004.entity.SubcategoryS;
 
 import java.util.List;
@@ -10,7 +11,7 @@ public interface ISubcategoryService {
 
 
     List<Object> getSubcategory(String lang, String categoryCode);
-    PageDataDto getAllSubcategory(PageableDto pageable);
+    PageDataDto getAllSubcategory(SubCategoryRequestDto pageable);
 
     SubcategoryS getSubcategoryDetail(String id);
 

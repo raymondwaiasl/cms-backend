@@ -1,10 +1,12 @@
 package com.asl.prd004.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.asl.prd004.dao.CategoryDao;
 import com.asl.prd004.dao.IndicatorsDao;
 import com.asl.prd004.dao.SubcategoryDao;
 import com.asl.prd004.dto.PageDataDto;
 import com.asl.prd004.dto.PageableDto;
+import com.asl.prd004.dto.SubCategoryRequestDto;
 import com.asl.prd004.dto.SubcategoryDto;
 import com.asl.prd004.entity.CategoryS;
 import com.asl.prd004.entity.IndicatorsS;
@@ -36,10 +38,10 @@ public class SubcategoryServiceImpl implements ISubcategoryService {
 
 
     @Override
-    public PageDataDto getAllSubcategory(PageableDto pageable) {
+    public PageDataDto getAllSubcategory(SubCategoryRequestDto subCategoryRequestDto) {
         Pageable page;
-        if (StringUtils.isNotEmpty(pageable.getSortModel().getField())) {
-            String sortField = pageable.getSortModel().getField();
+        if (StringUtils.isNotEmpty(subCategoryRequestDto.getSortModel().getField())) {
+            String sortField = subCategoryRequestDto.getSortModel().getField();
             switch (sortField) {
                 case "categoryCode":
                     sortField = "categoryCode";
@@ -54,19 +56,33 @@ public class SubcategoryServiceImpl implements ISubcategoryService {
                     sortField = "subcategoryNameTc";
                     break;
             }
-            if (pageable.getSortModel().getSort().equalsIgnoreCase("asc")) {
-                page = PageRequest.of(pageable.getPageState().getPage() - 1, pageable.getPageState().getPageSize(), Sort.by(sortField).ascending());
+            if (subCategoryRequestDto.getSortModel().getSort().equalsIgnoreCase("asc")) {
+                page = PageRequest.of(subCategoryRequestDto.getPageState().getPage() - 1, subCategoryRequestDto.getPageState().getPageSize(), Sort.by(sortField).ascending());
             } else {
-                page = PageRequest.of(pageable.getPageState().getPage() - 1, pageable.getPageState().getPageSize(), Sort.by(sortField).descending());
+                page = PageRequest.of(subCategoryRequestDto.getPageState().getPage() - 1, subCategoryRequestDto.getPageState().getPageSize(), Sort.by(sortField).descending());
             }
         } else {
-            page = PageRequest.of(pageable.getPageState().getPage() - 1, pageable.getPageState().getPageSize());
+            page = PageRequest.of(subCategoryRequestDto.getPageState().getPage() - 1, subCategoryRequestDto.getPageState().getPageSize());
         }
         Page<SubcategoryDto> subcategoryDtoPage = subcategoryDao.findAllSubcategory(page);
         List<SubcategoryDto> subcategoryDaoDtoList = subcategoryDtoPage.getContent();
+
+        String lang = StrUtil.isNotBlank(subCategoryRequestDto.getLang()) ? subCategoryRequestDto.getLang() : "EN";
+        subcategoryDaoDtoList.forEach(subcategoryRequestS -> {
+            List<CategoryS> categories = categoryDao.findCategoryByCategoryCode(subcategoryRequestS.getCategoryCode());
+            if (categories.size() == 0) return;
+            if (lang.equals("EN")) {
+                subcategoryRequestS.setCategoryCode(categories.get(0).getCategoryNameEn());
+            } else {
+                subcategoryRequestS.setCategoryCode(categories.get(0).getCategoryNameTc());
+            }
+        });
+
         PageDataDto subcategoryDto = new PageDataDto();
         subcategoryDto.setData(subcategoryDaoDtoList);
         subcategoryDto.setTotal(subcategoryDtoPage.getTotalElements());
+
+
         return subcategoryDto;
     }
 

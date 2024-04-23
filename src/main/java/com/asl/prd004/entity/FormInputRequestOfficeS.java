@@ -1,5 +1,6 @@
 package com.asl.prd004.entity;
 
+import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -8,6 +9,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "form_input_request_office_s")
+@Data
 public class FormInputRequestOfficeS extends BaseModel implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "seqGenerator")
