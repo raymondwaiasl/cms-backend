@@ -2,23 +2,17 @@ pipeline {
     agent any
 
     stages {
-        stage('Build') {
+        stage('list directory') {
             steps {
                 // Build steps (e.g., compile code, build artifacts)
-                echo 'mvn clean package'
+                sh 'ls'
             }
         }
 
-        stage('Test') {
+        stage('Test VS') {
             steps {
                 // Testing steps (e.g., run unit tests, integration tests)
-                echo 'mvn test'
-            }
-            post {
-                always {
-                    // Publish test reports
-                    echo 'target/surefire-reports/*.xml'
-                }
+                sh 'podman image list'
             }
         }
 
@@ -30,10 +24,4 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            // Clean up after the build
-            cleanWs()
-        }
-    }
 }
