@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE_NAME = 'cmab-backend'
+        DOCKER_IMAGE_TAG = 'latest'
+    }
+
     stages {
         stage('list directory') {
             steps {
@@ -9,10 +14,20 @@ pipeline {
             }
         }
 
-        stage('Test VS') {
+    stages {
+        stage('Build Docker Image') {
             steps {
-                // Testing steps (e.g., run unit tests, integration tests)
-                sh 'podman image list'
+                script {
+                    def dockerImage
+                    
+                    // Build the Docker image from the source code's Dockerfile
+                    dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}", ".")
+                    
+                    // Optional: Push the Docker image to a registry
+                    // docker.withRegistry('https://registry.example.com', 'docker-registry-credentials') {
+                    //     dockerImage.push()
+                    // }
+                }
             }
         }
 
