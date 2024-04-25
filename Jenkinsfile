@@ -16,17 +16,18 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    def dockerImage
+                sh 'docker build -t registry.t11.caas.gcisdctr.hksarg:30128/cmab-backend .'
+                // script {
+                //     def dockerImage
                     
-                    // Build the Docker image from the source code's Dockerfile
-                    dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}", ".")
+                //     // Build the Docker image from the source code's Dockerfile
+                //     dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}", ".")
                     
-                    // Optional: Push the Docker image to a registry
-                    // docker.withRegistry('https://registry.example.com', 'docker-registry-credentials') {
-                    //     dockerImage.push()
-                    // }
-                }
+                //     // Optional: Push the Docker image to a registry
+                //     // docker.withRegistry('https://registry.example.com', 'docker-registry-credentials') {
+                //     //     dockerImage.push()
+                //     // }
+                // }
             }
         }
 
