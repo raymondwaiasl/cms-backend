@@ -14,9 +14,10 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Check podman version') {
             steps {
-                sh 'docker build -t registry.t11.caas.gcisdctr.hksarg:30128/cmab-backend .'
+                sh 'podman -v'
+                // sh 'docker build -t registry.t11.caas.gcisdctr.hksarg:30128/cmab-backend .'
                 // script {
                 //     def dockerImage
                     
