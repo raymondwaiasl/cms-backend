@@ -16,7 +16,7 @@ pipeline {
 
         stage('Check podman version') {
             steps {
-                sh 'podman -v'
+                sh 'oc version'
                 // sh 'docker build -t registry.t11.caas.gcisdctr.hksarg:30128/cmab-backend .'
                 // script {
                 //     def dockerImage
