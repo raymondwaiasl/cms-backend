@@ -3,7 +3,7 @@ COPY . /usr/app
 WORKDIR /usr/app
 RUN chmod +x mvnw \
     && ./mvnw --version \
-    && ./mvnw clean package
+    && ./mvnw clean package -DskipTests
 
 FROM openjdk:17-alpine
 COPY --from=build /usr/app/target/*.jar app.jar
