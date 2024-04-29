@@ -17,18 +17,8 @@ pipeline {
         stage('Check podman version') {
             steps {
                 sh 'oc version'
-                // sh 'docker build -t registry.t11.caas.gcisdctr.hksarg:30128/cmab-backend .'
-                // script {
-                //     def dockerImage
-                    
-                //     // Build the Docker image from the source code's Dockerfile
-                //     dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}", ".")
-                    
-                //     // Optional: Push the Docker image to a registry
-                //     // docker.withRegistry('https://registry.example.com', 'docker-registry-credentials') {
-                //     //     dockerImage.push()
-                //     // }
-                // }
+                sh 'oc login -u cmadashb-c01 -p Cm@bP@ssw0rd --server=https://api.t11.caas.gcisdctr.hksarg:6443'
+                sh 'oc get po'
             }
         }
 

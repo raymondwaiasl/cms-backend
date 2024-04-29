@@ -15,8 +15,8 @@ spring:
     #password: '@asL2023'
 
     url: jdbc:mariadb://t2vdbs-cmadashb-dsefdbu-ha1.dbaas.gcisdctr.hksarg:19307/eformdata?sslMode=trust
-    username: eFormOwner
-    password: 'C@6F+ux2'
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
   jpa:
     # database: MySQL
     # database-platform: com.asl.prd004.config.MySQL8WithoutFKDialect

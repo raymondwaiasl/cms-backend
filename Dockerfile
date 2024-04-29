@@ -11,8 +11,11 @@ COPY --from=build /usr/app/target/*.jar app.jar
 VOLUME /resource
 COPY /resource /resource
 
+COPY read_secrets.sh /opt/read_secrets.sh
+RUN chmod +x /opt/read_secrets.sh
+
 EXPOSE 8080
 
-# CMD ["/bin/bash"]
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["/opt/read_secrets.sh"]
+CMD ["java","-jar","app.jar"]
 
